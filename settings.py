@@ -2,21 +2,20 @@ import os
 from pathlib import Path
 from datetime import timedelta
 
-# ===== تنظیم BASE_DIR =====
+# ===== BASE_DIR =====
 BASE_DIR = Path(__file__).resolve().parent.parent
 
-# ===== بارگذاری متغیرهای محیطی =====
-try:
-    from dotenv import load_dotenv
-    load_dotenv()
-except ImportError:
-    pass  # اگه dotenv نصب نیست، خطا نده
+# ===== متغیرهای محیطی (از ریلیوی میخونه) =====
+SECRET_KEY = os.environ.get('SECRET_KEY', 'django-insecure-melorina-bot-2024')
+DEBUG = os.environ.get('DEBUG', 'False') == 'True'
+ALLOWED_HOSTS = os.environ.get('ALLOWED_HOSTS', '*').split(',')
 
-SECRET_KEY = os.getenv('SECRET_KEY', 'django-insecure-123456789')
-DEBUG = os.getenv('DEBUG', 'True') == 'True'
-ALLOWED_HOSTS = os.getenv('ALLOWED_HOSTS', 'localhost,127.0.0.1').split(',')
+# ===== توکن ربات و جیمینای از ریلیوی =====
+BOT_TOKEN = os.environ.get('BOT_TOKEN')
+ADMIN_ID = int(os.environ.get('ADMIN_ID', 0))
+GEMINI_API_KEY = os.environ.get('GEMINI_API_KEY')
 
-# ===== نصب شده‌ها =====
+# ===== Apps =====
 INSTALLED_APPS = [
     'django.contrib.admin',
     'django.contrib.auth',
@@ -64,15 +63,15 @@ TEMPLATES = [
 
 WSGI_APPLICATION = 'book_project.wsgi.application'
 
-# ===== دیتابیس =====
+# ===== دیتابیس (SQLite برای Railway) =====
 DATABASES = {
     'default': {
-        'ENGINE': 'django.db.backends.sqlite3',  # برای تست از SQLite استفاده کن
+        'ENGINE': 'django.db.backends.sqlite3',
         'NAME': BASE_DIR / 'db.sqlite3',
     }
 }
 
-# ===== کش =====
+# ===== کش ساده =====
 CACHES = {
     'default': {
         'BACKEND': 'django.core.cache.backends.locmem.LocMemCache',
@@ -85,7 +84,7 @@ REST_FRAMEWORK = {
         'rest_framework_simplejwt.authentication.JWTAuthentication',
     ),
     'DEFAULT_PERMISSION_CLASSES': (
-        'rest_framework.permissions.IsAuthenticated',
+        'rest_framework.permissions.AllowAny',
     ),
 }
 
@@ -96,8 +95,29 @@ SIMPLE_JWT = {
 
 # ===== Static & Media =====
 STATIC_URL = '/static/'
+STATIC_ROOT = os.path.join(BASE_DIR, 'staticfiles')
+
 MEDIA_URL = '/media/'
 MEDIA_ROOT = os.path.join(BASE_DIR, 'media')
 
 # ===== CORS =====
 CORS_ALLOW_ALL_ORIGINS = True
+
+# ===== Swagger =====
+SWAGGER_SETTINGS = {
+    'SECURITY_DEFINITIONS': {
+        'Bearer': {
+            'type': 'apiKey',
+            'name': 'Authorization',
+            'in': 'header'
+        }
+    }
+}
+
+# ===== چاپ متغیرها برای دیباگ (توی لاگ ریلیوی میبینی) =====
+print("=" * 50)
+print("✅ تنظیمات بارگذاری شد!")
+print(f"BOT_TOKEN: {'✅ موجود' if BOT_TOKEN else '❌ پیدا نشد'}")
+print(f"ADMIN_ID: {ADMIN_ID}")
+print(f"GEMINI_API_KEY: {'✅ موجود' if GEMINI_API_KEY else '❌ پیدا نشد'}")
+print("=" * 50)
